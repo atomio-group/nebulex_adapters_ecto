@@ -34,3 +34,6 @@ nebulex_adapters_ecto-*.tar
 
 # Docker postgres data dir
 /data/
+
+# Dot env
+.env

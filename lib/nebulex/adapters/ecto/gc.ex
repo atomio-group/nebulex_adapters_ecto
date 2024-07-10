@@ -74,11 +74,14 @@ defmodule Nebulex.Adapters.Ecto.GC do
 
   defmacrop ctid, do: quote(do: fragment("ctid"))
 
+  defp now do
+    DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+  end
+
   defp collect_garbage(state) do
     %{repo: repo, table: table, max_amount: max_amount} = state
     import Ecto.Query
-
-    now = :erlang.monotonic_time(:millisecond)
+    now = now()
 
     # Remove stale entries
     repo.delete_all(from(x in table, where: x.touched_at + x.ttl < ^now))
@@ -88,7 +91,7 @@ defmodule Nebulex.Adapters.Ecto.GC do
       from(x in table,
         where:
           ctid() in subquery(
-            from(x in table, select: ctid(), order_by: x.touched_at, offset: ^max_amount)
+            from(x in table, select: ctid(), order_by: [desc: x.touched_at], offset: ^max_amount)
           )
       )
     )

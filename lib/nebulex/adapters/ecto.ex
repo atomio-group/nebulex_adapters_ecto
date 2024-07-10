@@ -96,8 +96,8 @@ defmodule Nebulex.Adapters.Ecto do
 
   defspan get_all(meta, keys, _opts) do
     %{repo: repo, table: table, strategy: strategy} = meta
-    now = now()
     keys = Enum.map(keys, &term_to_binary/1)
+    now = now()
 
     case strategy do
       :lrw ->
@@ -298,6 +298,10 @@ defmodule Nebulex.Adapters.Ecto do
     |> Enum.map(&binary_to_term/1)
   end
 
+  def do_execute(%{repo: repo}, :all, queryable, _opts) do
+    repo.all(queryable)
+  end
+
   def do_execute(%{repo: repo, table: table}, :count_all, nil, _opts) do
     now = now()
 
@@ -333,8 +337,9 @@ defmodule Nebulex.Adapters.Ecto do
 
   ## Helpers
 
-  defp to_entry(key, value, ttl, now \\ now()) do
+  defp to_entry(key, value, ttl, now \\ nil) do
     ttl = with :infinity <- ttl, do: nil
+    now = if now == nil, do: now()
 
     %{
       value: term_to_binary(value),
@@ -346,7 +351,6 @@ defmodule Nebulex.Adapters.Ecto do
 
   defp base_query(table, key) do
     key = term_to_binary(key)
-
     now = now()
 
     from(x in table,
@@ -357,7 +361,7 @@ defmodule Nebulex.Adapters.Ecto do
   end
 
   defp now do
-    :erlang.monotonic_time(:millisecond)
+    DateTime.utc_now() |> DateTime.to_unix(:millisecond)
   end
 
   defp hit?({0, _}), do: false
