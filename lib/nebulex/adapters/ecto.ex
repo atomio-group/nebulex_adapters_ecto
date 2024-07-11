@@ -298,10 +298,6 @@ defmodule Nebulex.Adapters.Ecto do
     |> Enum.map(&binary_to_term/1)
   end
 
-  def do_execute(%{repo: repo}, :all, queryable, _opts) do
-    repo.all(queryable)
-  end
-
   def do_execute(%{repo: repo, table: table}, :count_all, nil, _opts) do
     now = now()
 
@@ -361,7 +357,7 @@ defmodule Nebulex.Adapters.Ecto do
   end
 
   defp now do
-    DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+    Nebulex.Time.now()
   end
 
   defp hit?({0, _}), do: false

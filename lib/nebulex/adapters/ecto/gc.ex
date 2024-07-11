@@ -75,7 +75,7 @@ defmodule Nebulex.Adapters.Ecto.GC do
   defmacrop ctid, do: quote(do: fragment("ctid"))
 
   defp now do
-    DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+    Nebulex.Time.now()
   end
 
   defp collect_garbage(state) do
